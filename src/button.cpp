@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "button.h"
 #include "SDL_image.h"
 
@@ -6,6 +7,11 @@ Button::Button(SDL_Renderer *renderer, SDL_Rect button_box, const char *image_pa
 {
     m_pressed = false;
     m_button_texture = IMG_LoadTexture(m_renderer, image_path);
+
+    if (m_button_texture == nullptr)
+    {
+        fprintf(stderr, "Failed to load %s\n", image_path);
+    }
 }
 
 Button::~Button()
@@ -15,7 +21,7 @@ Button::~Button()
 
 void Button::render() const
 {
-    
+    SDL_RenderCopy(m_renderer, m_button_texture, NULL, &m_button_box);
 }
 
 void Button::press()

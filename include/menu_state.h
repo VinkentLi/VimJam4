@@ -1,10 +1,11 @@
 #pragma once
 #include "game_state.h"
+#include "button.h"
 
 class MenuState : public GameState
 {
 private:
-	
+	Button *m_button;
 
 public:
 	MenuState(SDL_Renderer *renderer, GameStateManager* game_state_manager);
