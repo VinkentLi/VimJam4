@@ -1,4 +1,4 @@
-#include "MenuState.h"
+#include "menu_state.h"
 
 GameStateManager::GameStateManager(SDL_Renderer *renderer) : m_renderer(renderer)
 {

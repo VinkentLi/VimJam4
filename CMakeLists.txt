@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.7)
 project(Paths)
 
 find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
+find_package(SDL2_image REQUIRED CONFIG REQUIRED COMPONENTS SDL2_image)
 find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
 
 # set(SDL2_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/cmake/SDL2)
@@ -33,3 +34,4 @@ if (TARGET SDL::SDL2main)
 endif()
 
 target_link_libraries(Paths PRIVATE SDL2::SDL2)
+target_link_libraries(Paths PRIVATE SDL2_image::SDL2_image)

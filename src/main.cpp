@@ -1,6 +1,6 @@
 #include <SDL.h>
 #include <stdio.h>
-#include "GameStateManager.h"
+#include "game_state_manager.h"
 
 #undef main
 
@@ -101,6 +101,12 @@ int main()
 		update(dt);
 		render();
 	}
+
+	delete game_state_manager;
+
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	SDL_Quit();
 
 	return 0;
 }

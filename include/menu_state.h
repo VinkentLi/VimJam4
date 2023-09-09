@@ -1,10 +1,13 @@
 #pragma once
-#include "GameState.h"
+#include "game_state.h"
 
 class MenuState : public GameState
 {
+private:
+	
+
 public:
-	using GameState::GameState;
+	MenuState(SDL_Renderer *renderer, GameStateManager* game_state_manager);
 	~MenuState();
 	void handle_events(SDL_Event *event) override;
 	void update(float dt) override;
