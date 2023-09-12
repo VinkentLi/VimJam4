@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <stdio.h>
+#include <memory>
 #include "game_state_manager.h"
 
 #undef main
@@ -12,7 +13,7 @@
 SDL_Window *window = nullptr;
 SDL_Renderer *renderer = nullptr;
 
-GameStateManager *game_state_manager = nullptr;
+std::unique_ptr<GameStateManager> game_state_manager;
 
 bool running = true;
 
@@ -49,7 +50,7 @@ void init()
 
 	SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT);
 
-	game_state_manager = new GameStateManager(renderer);
+	game_state_manager = std::make_unique<GameStateManager>(renderer);
 }
 
 void update(float dt)
@@ -101,8 +102,6 @@ int main()
 		update(dt);
 		render();
 	}
-
-	delete game_state_manager;
 
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
