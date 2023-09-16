@@ -6,12 +6,18 @@
 class MenuState : public GameState
 {
 private:
-	std::unique_ptr<Button> m_button;
+	MenuState() {}
+
+	static MenuState m_menu_state;
+	static Button m_button;
+	float m_timer;
+	float m_add_color;
 
 public:
-	MenuState(SDL_Renderer *renderer, GameStateManager *game_state_manager);
-	~MenuState() override {};
+	void init() override;
+	void destroy() override;
 	void handle_events(SDL_Event *event) override;
 	void update(float dt) override;
 	void render() const override;
+	static MenuState *get();
 };

@@ -1,27 +1,29 @@
 #include <stdio.h>
 #include "button.h"
-#include "SDL_image.h"
+#include "constants.h"
 
-Button::Button(SDL_Renderer *renderer, SDL_Rect button_box, const char *image_path) 
-    : m_renderer(renderer), m_button_box(button_box)
+Button::Button(SDL_Renderer *renderer, SDL_Rect button_box, SDL_Color color) 
+    : m_renderer(renderer), m_button_box(button_box), m_color(color)
 {
     m_pressed = false;
-    m_button_texture = IMG_LoadTexture(m_renderer, image_path);
-
-    if (m_button_texture == nullptr)
-    {
-        fprintf(stderr, "Failed to load %s\n", image_path);
-    }
 }
 
 Button::~Button()
 {
-    SDL_DestroyTexture(m_button_texture);
 }
 
 void Button::render() const
 {
-    SDL_RenderCopy(m_renderer, m_button_texture, NULL, &m_button_box);
+    if (!m_pressed)
+    {
+        SDL_SetRenderDrawColor(m_renderer, m_color.r, m_color.g, m_color.b, 0xFF);
+    }
+    else
+    {
+        SDL_SetRenderDrawColor(m_renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+    }
+
+    SDL_RenderFillRect(m_renderer, &m_button_box);
 }
 
 void Button::press()
@@ -32,4 +34,21 @@ void Button::press()
 void Button::release()
 {
     m_pressed = false;
+}
+
+void Button::add_color(int add1, int add2, int add3)
+{
+    m_color.r += add1;
+    m_color.g += add2;
+    m_color.b += add3;
+}
+
+SDL_Rect *Button::get_button_box()
+{
+    return &m_button_box;
+}
+
+bool Button::is_pressed()
+{
+    return m_pressed;
 }

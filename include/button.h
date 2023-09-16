@@ -4,15 +4,19 @@
 class Button
 {
 private:
-    SDL_Renderer *m_renderer;
-    SDL_Texture *m_button_texture;
     bool m_pressed;
+    SDL_Renderer *m_renderer;
     SDL_Rect m_button_box;
+    SDL_Color m_color;
 
 public:
-    Button(SDL_Renderer *renderer, SDL_Rect button_box, const char *image_path);
+    Button() = default;
+    Button(SDL_Renderer *renderer, SDL_Rect button_box, SDL_Color color);
     ~Button();
     void render() const;
     void press();
     void release();
+    void add_color(int add1, int add2, int add3);
+    SDL_Rect *get_button_box();
+    bool is_pressed();
 };

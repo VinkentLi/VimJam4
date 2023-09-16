@@ -2,20 +2,14 @@
 #include <stdio.h>
 #include <memory>
 #include "game_state_manager.h"
+#include "menu_state.h"
+#include "constants.h"
+#include "font.h"
 
 #undef main
 
-#define WIDTH 320
-#define HEIGHT 180
-#define SCREEN_WIDTH 1280
-#define SCREEN_HEIGHT 720
-
 SDL_Window *window = nullptr;
 SDL_Renderer *renderer = nullptr;
-
-std::unique_ptr<GameStateManager> game_state_manager;
-
-bool running = true;
 
 void init()
 {
@@ -50,12 +44,14 @@ void init()
 
 	SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT);
 
-	game_state_manager = std::make_unique<GameStateManager>(renderer);
+	FontRender::init(renderer);
+	GameStateManager::init(renderer);
+	GameStateManager::add_state(MenuState::get());
 }
 
 void update(float dt)
 {
-	game_state_manager->update(dt);
+	GameStateManager::update(dt);
 }
 
 void render()
@@ -63,7 +59,7 @@ void render()
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderClear(renderer);
 
-	game_state_manager->render();
+	GameStateManager::render();
 
 	SDL_RenderPresent(renderer);
 }
@@ -76,10 +72,16 @@ void handle_events()
 	{
 		if (e.type == SDL_QUIT)
 		{
-			running = false;
+			FontRender::destroy();
+			GameStateManager::destroy();
+			SDL_DestroyRenderer(renderer);
+			SDL_DestroyWindow(window);
+			SDL_Quit();
+			exit(EXIT_SUCCESS);
+
 			break;
 		}
-		game_state_manager->handle_events(&e);
+		GameStateManager::handle_events(&e);
 	}
 }
 
@@ -92,7 +94,7 @@ int main()
 	uint64_t current_time;
 	float dt;
 
-	while (running)
+	while (true)
 	{
 		current_time = SDL_GetTicks64();
 		dt = (current_time - last_frame) / interval;
@@ -102,10 +104,6 @@ int main()
 		update(dt);
 		render();
 	}
-
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
-	SDL_Quit();
 
 	return 0;
 }
