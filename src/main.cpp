@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <SDL_image.h>
 #include <stdio.h>
 #include <memory>
 #include "game_state_manager.h"
@@ -16,6 +17,12 @@ void init()
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
 		fprintf(stderr, "SDL_Init(SDL_INIT_VIDEO) has failed! %s\n", SDL_GetError());
+		exit(1);
+	}
+
+	if (!IMG_Init(IMG_INIT_PNG))
+	{
+		fprintf(stderr, "IMG_Init(IMG_INIT_PNG) has failed! %s\n", SDL_GetError());
 		exit(1);
 	}
 
@@ -89,10 +96,12 @@ int main()
 {
 	init();
 
-	float interval = 1000.0f / 60.0f;
+	constexpr float interval = 1000.0f / 60.0f;
 	uint64_t last_frame = SDL_GetTicks64();
 	uint64_t current_time;
 	float dt;
+	int frames = 0;
+	float timer = 0;
 
 	while (true)
 	{
@@ -100,9 +109,19 @@ int main()
 		dt = (current_time - last_frame) / interval;
 		last_frame = current_time;
 
+		timer += dt / 60.0f;
+
+		if (timer >= 1.0f)
+		{
+			timer--;
+			SDL_SetWindowTitle(window, std::to_string(frames).c_str());
+			frames = 0;
+		}
+
 		handle_events();
 		update(dt);
 		render();
+		frames++;
 	}
 
 	return 0;
