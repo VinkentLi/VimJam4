@@ -66,6 +66,11 @@ void SelectState::init()
     m_node_bond_off_tex = SDL_CreateTextureFromSurface(renderer, node_bond_surf);
     SDL_FreeSurface(node_bond_surf);
 
+    m_buy_sound = Mix_LoadWAV("res/sfx/buy.wav");
+    m_enter_sound = Mix_LoadWAV("res/sfx/enter.wav");
+    m_unlock_bond_sound = Mix_LoadWAV("res/sfx/unlock_bond.wav");
+    m_level_complete_sound = Mix_LoadWAV("res/sfx/level_complete.wav");
+
     // SDL_Log("%d", SDL_MUSTLOCK(m_node_bond_on_surf));
     // SDL_LockSurface(m_node_bond_on_surf);
 
@@ -123,6 +128,10 @@ void SelectState::destroy()
     SDL_DestroyTexture(m_node_bond_off_tex);
     // SDL_UnlockSurface(m_node_bond_on_surf);
     SDL_FreeSurface(m_node_surface);
+    Mix_FreeChunk(m_buy_sound);
+    Mix_FreeChunk(m_enter_sound);
+    Mix_FreeChunk(m_unlock_bond_sound);
+    Mix_FreeChunk(m_level_complete_sound);
 }
 
 void SelectState::parse_node_data()
@@ -184,6 +193,7 @@ void SelectState::handle_events(SDL_Event *event)
         {
             if (m_last_played_node != get_cur_lvl())
             {
+                Mix_PlayChannel(-1, m_enter_sound, 0);
                 GameStateManager::add_state(PlayState::get());
             }
             else if (!m_no_double_play_mode)
@@ -208,6 +218,7 @@ void SelectState::handle_events(SDL_Event *event)
 
                 if (coins >= 3)
                 {
+                    Mix_PlayChannel(-1, m_buy_sound, 0);
                     PlayState::add_checkpoints(1);
                     PlayState::add_coins(-3);
                 }
@@ -277,6 +288,7 @@ void SelectState::update(float dt)
                 {
                     m_nodes.at(tl_node_pos.value()).br = true;
                     m_select_bond_mode = false;
+                    Mix_PlayChannel(-1, m_unlock_bond_sound, 0);
                 }
             }
         }
@@ -301,6 +313,7 @@ void SelectState::update(float dt)
                 {
                     m_nodes.at(tr_node_pos.value()).bl = true;
                     m_select_bond_mode = false;
+                    Mix_PlayChannel(-1, m_unlock_bond_sound, 0);
                 }
             }
         }
@@ -327,6 +340,7 @@ void SelectState::update(float dt)
             {
                 m_cur_node->bl = true;
                 m_select_bond_mode = false;
+                Mix_PlayChannel(-1, m_unlock_bond_sound, 0);
             }
         }
     }
@@ -352,6 +366,7 @@ void SelectState::update(float dt)
             {
                 m_cur_node->br = true;
                 m_select_bond_mode = false;
+                Mix_PlayChannel(-1, m_unlock_bond_sound, 0);
             }
         }
     }
@@ -643,10 +658,16 @@ void SelectState::set_last_played_node(int i)
     m_last_played_node = i;
 }
 
+Mix_Chunk *SelectState::get_lvl_cmplte_snd()
+{
+    return m_level_complete_sound;
+}
+
 void SelectState::go_back_to_state()
 {
     SelectState *ss = SelectState::get();
 
+    Mix_PlayChannel(-1, ss->get_lvl_cmplte_snd(), 0);
     ss->set_select_bond(true);
     ss->get_cur_node()->active = true;
     ss->set_last_played_node(ss->get_cur_lvl());

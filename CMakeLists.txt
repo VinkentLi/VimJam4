@@ -3,6 +3,7 @@ project(Paths)
 
 find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
 find_package(SDL2_image REQUIRED CONFIG REQUIRED COMPONENTS SDL2_image)
+find_package(SDL2_mixer REQUIRED CONFIG REQUIRED COMPONENTS SDL2_mixer)
 find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
 
 # set(SDL2_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/cmake/SDL2)
@@ -35,3 +36,4 @@ endif()
 
 target_link_libraries(Paths PRIVATE SDL2::SDL2)
 target_link_libraries(Paths PRIVATE SDL2_image::SDL2_image)
+target_link_libraries(Paths PRIVATE SDL2_mixer::SDL2_mixer)

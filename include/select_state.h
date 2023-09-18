@@ -1,4 +1,5 @@
 #pragma once
+#include <SDL_mixer.h>
 #include <vector>
 #include <string>
 #include <optional>
@@ -36,6 +37,10 @@ private:
     SDL_Texture *m_node_bond_off_tex;
     SDL_Texture *m_node_off_tex;
     SDL_Texture *m_node_on_tex;
+    Mix_Chunk *m_buy_sound;
+    Mix_Chunk *m_enter_sound;
+    Mix_Chunk *m_unlock_bond_sound;
+    Mix_Chunk *m_level_complete_sound;
     std::string m_node_data;
     std::vector<Node> m_nodes;
     std::vector<Node>::iterator m_cur_node;
@@ -70,5 +75,6 @@ public:
     std::vector<Node>::iterator get_cur_node();
     void set_select_bond(bool a);
     void set_last_played_node(int i);
+    Mix_Chunk *get_lvl_cmplte_snd();
     static void go_back_to_state();
 };

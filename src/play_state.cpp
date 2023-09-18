@@ -19,6 +19,10 @@ void PlayState::init()
     m_invinc_timer = 0.0f;
     m_player_tex = IMG_LoadTexture(renderer, "res/gfx/player.png");
     m_checkpoint_tex = IMG_LoadTexture(renderer, "res/gfx/checkpoint.png");
+    m_checkpoint_sound = Mix_LoadWAV("res/sfx/checkpoint.wav");
+    m_coin_sound = Mix_LoadWAV("res/sfx/coin.wav");
+    m_death_sound = Mix_LoadWAV("res/sfx/death.wav");
+    m_jump_sound = Mix_LoadWAV("res/sfx/jump.wav");
     m_left_pressed = false;
     m_right_pressed = false;
     m_jump_pressed = false;
@@ -33,12 +37,17 @@ void PlayState::destroy()
 {
     SDL_DestroyTexture(m_player_tex);
     SDL_DestroyTexture(m_checkpoint_tex);
+    Mix_FreeChunk(m_checkpoint_sound);
+    Mix_FreeChunk(m_coin_sound);
+    Mix_FreeChunk(m_death_sound);
+    Mix_FreeChunk(m_jump_sound);
     m_checkpoint_rects.clear();
     delete m_level;
 }
 
 void PlayState::kill()
 {
+    Mix_PlayChannel(-1, m_death_sound, 0);
     m_dead = true;
     m_player_pos = m_latest_checkpoint_pos;
     m_player_hitbox.x = m_player_pos.x + 5.0f;
@@ -106,6 +115,7 @@ void PlayState::handle_events(SDL_Event *event)
                 break;
             }
 
+            Mix_PlayChannel(-1, m_checkpoint_sound, 0);
             change_used_checkpoint();
             add_checkpoints(-1);
             m_latest_checkpoint_pos = SDL_FPoint {m_player_pos.x, m_player_pos.y};
@@ -131,8 +141,6 @@ void PlayState::update(float dt)
     m_level->update(dt);
 
     float x_accel = m_X_ACCEL;
-
-    SDL_Log("%d", m_grounded);
 
     if (!m_grounded)
     {
@@ -196,6 +204,7 @@ void PlayState::update(float dt)
     {
         if (m_grounded)
         {
+            Mix_PlayChannel(-1, m_jump_sound, 0);
             m_player_y_velo = m_JUMP_STRENGTH;
             m_jumping = true;
         }
@@ -277,6 +286,7 @@ void PlayState::update(float dt)
     {
         if (SDL_HasIntersectionF(&m_player_hitbox, it.base()))
         {
+            Mix_PlayChannel(-1, m_coin_sound, 0);
             PlayState::add_coins(1);
             coins.erase(it);
         }

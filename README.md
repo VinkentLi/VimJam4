@@ -10,7 +10,7 @@ then type this command to create a makefile in the build directory
 
 (you dont need to do -G "MinGW Makefiles" if you are not using mingw)
 
-cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DSDL2_DIR="path/to/sdl2/cmake/files" -DSDL2_image_DIR="path/to/sdl2_image/cmake/files"
+cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DSDL2_DIR="path/to/sdl2/cmake/files" -DSDL2_image_DIR="path/to/sdl2_image/cmake/files" -DSDL2_mixer_DIR="path/to/sdl2_mixer/cmake/files"
 
 then once you created the makefile, use the makefile using make
 

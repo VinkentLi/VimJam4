@@ -1,4 +1,5 @@
 #pragma once
+#include <SDL_mixer.h>
 #include "game_state.h"
 #include "level.h"
 
@@ -29,6 +30,10 @@ private:
     static constexpr float m_MAX_SPRINT_VELO = 2.0f;
     SDL_Texture *m_player_tex;
     SDL_Texture *m_checkpoint_tex;
+    Mix_Chunk *m_checkpoint_sound;
+    Mix_Chunk *m_coin_sound;
+    Mix_Chunk *m_death_sound;
+    Mix_Chunk *m_jump_sound;
     bool m_left_pressed, m_right_pressed, m_jump_pressed, m_sprint_pressed;
     bool m_grounded;
     bool m_jumping;

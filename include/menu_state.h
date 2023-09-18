@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <SDL_mixer.h>
 #include "game_state.h"
 #include "button.h"
 
@@ -10,6 +11,7 @@ private:
 
 	static MenuState m_menu_state;
 	static Button m_button;
+	Mix_Chunk *m_play_sound;
 	float m_timer;
 	float m_add_color;
 

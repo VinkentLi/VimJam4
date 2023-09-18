@@ -16,6 +16,8 @@ void MenuState::init()
 		SDL_Color {.r = 0, .g = 150, .b = 0}
 	);
 
+	m_play_sound = Mix_LoadWAV("res/sfx/play.wav");
+
 	// SDL_Log("%d, %d, %d, %d", m_button.get_button_box()->x, m_button.get_button_box()->y, m_button.get_button_box()->w, m_button.get_button_box()->h);
 
 	m_timer = 0.0f;
@@ -24,7 +26,7 @@ void MenuState::init()
 
 void MenuState::destroy()
 {
-
+	Mix_FreeChunk(m_play_sound);
 }
 
 void MenuState::handle_events(SDL_Event *event)
@@ -63,6 +65,7 @@ void MenuState::handle_events(SDL_Event *event)
 
 		if (SDL_PointInRect(&loc, m_button.get_button_box()) && m_button.is_pressed())
 		{
+			Mix_PlayChannel(-1, m_play_sound, 0);
 			GameStateManager::add_state(SelectState::get()); // switch to select state
 		}
 		m_button.release();

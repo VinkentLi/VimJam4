@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory>
@@ -28,6 +29,8 @@ void init()
 		fprintf(stderr, "IMG_Init(IMG_INIT_PNG) has failed! %s\n", SDL_GetError());
 		exit(1);
 	}
+
+	Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 2048);
 
 	window = SDL_CreateWindow(
 		"Game",
