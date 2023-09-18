@@ -1,3 +1,10 @@
+### Paths
+## I couldn't think of a good name lol
+# the code sucks as well lol
+
+## Anyways heres how to build it
+# make sure you have cmake
+
 create a build directory called "build"
 then type this command to create a makefile in the build directory
 

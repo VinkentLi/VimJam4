@@ -79,21 +79,27 @@ void MenuState::update(float dt)
 
 void MenuState::render() const
 {
-	for (int y = 0; y < HEIGHT; y++)
-	{
-		for (int x = 0; x < WIDTH; x++)
-		{
-			int i = y + x;
-			int j = i * 500 + int(m_timer) * 500;
+	// for (int y = 0; y < HEIGHT; y++)
+	// {
+	// 	for (int x = 0; x < WIDTH; x++)
+	// 	{
+	// 		int i = y + x;
+	// 		int j = i * 500 + int(m_timer) * 500;
 
-			// int r = j >> 16;
-			// int g = (j >> 8) & 0xFF;
-			int b = std::clamp((j & 0xFF) + 50, 0, 255); // cool colors :D
+	// 		// int r = j >> 16;
+	// 		// int g = (j >> 8) & 0xFF;
+	// 		int b = std::clamp((j & 0xFF) + 50, 0, 255); // cool colors :D
 
-			SDL_SetRenderDrawColor(renderer, 0, 0, b, 255);
-			SDL_RenderDrawPoint(renderer, x, y);
-		}
-	}
+	// 		SDL_SetRenderDrawColor(renderer, 0, 0, b, 255);
+	// 		SDL_RenderDrawPoint(renderer, x, y);
+	// 	}
+	// }
+
+	uint32_t j = int(m_timer);
+	int b = std::clamp((int32_t)((j & 0xFF) + 50), 0, 255);
+
+	SDL_SetRenderDrawColor(renderer, 0, 0, b, 0xFF);
+	SDL_RenderFillRect(renderer, NULL);
 
 	m_button.render();
 

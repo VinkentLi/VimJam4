@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <SDL_image.h>
 #include "select_state.h"
+#include "play_state.h"
 #include "constants.h"
 #include "font.h"
 
@@ -98,6 +99,7 @@ void SelectState::init()
     });
 
     m_cur_node = m_nodes.begin();
+    m_last_played_node = -1;
 
     m_camera_pos = SDL_FPoint{.x = 13.0f / 2.0f - m_CAM_W / 2, .y = -m_CAM_H / 2 + 0.5};
     m_player_pos = SDL_FPoint{.x = 6.0f, .y = 0.0f}; 
@@ -107,6 +109,9 @@ void SelectState::init()
     m_move_bl = false;
     m_move_br = false;
     m_moving = false;
+    m_shop_mode = false;
+    m_select_bond_mode = false;
+    m_no_double_play_mode = false;
 }
 
 void SelectState::destroy()
@@ -115,6 +120,7 @@ void SelectState::destroy()
     SDL_DestroyTexture(m_node_on_tex);
     SDL_DestroyTexture(m_node_off_tex);
     SDL_DestroyTexture(m_node_bond_on_tex);
+    SDL_DestroyTexture(m_node_bond_off_tex);
     // SDL_UnlockSurface(m_node_bond_on_surf);
     SDL_FreeSurface(m_node_surface);
 }
@@ -168,9 +174,45 @@ void SelectState::parse_node_data()
 
 void SelectState::handle_events(SDL_Event *event)
 {
-    if (event->type == SDL_KEYDOWN && event->key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+    if (event->type == SDL_KEYDOWN)
     {
-        GameStateManager::pop_state();
+        // if (event->key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+        // {    
+        //     GameStateManager::pop_state();
+        // }
+        /*else*/ if (event->key.keysym.scancode == SDL_SCANCODE_SPACE)
+        {
+            if (m_last_played_node != get_cur_lvl())
+            {
+                GameStateManager::add_state(PlayState::get());
+            }
+            else if (!m_no_double_play_mode)
+            {
+                m_no_double_play_mode = true;
+            }
+            else
+            {
+                m_no_double_play_mode = false;
+            }
+        }
+    }
+    else if (event->type == SDL_KEYUP)
+    {
+        if (event->key.keysym.scancode == SDL_SCANCODE_S)
+            m_shop_mode = !m_shop_mode;
+        else if (event->key.keysym.scancode == SDL_SCANCODE_B)
+        {
+            if (m_shop_mode)
+            {
+                int coins = PlayState::get_coins();
+
+                if (coins >= 3)
+                {
+                    PlayState::add_checkpoints(1);
+                    PlayState::add_coins(-3);
+                }
+            }
+        }
     }
 
     if (!m_moving && event->type == SDL_MOUSEBUTTONDOWN)
@@ -222,12 +264,20 @@ void SelectState::update(float dt)
 
         if (tl_node_pos.has_value())
         {
-            if (m_nodes.at(tl_node_pos.value()).br.has_value() && m_nodes.at(tl_node_pos.value()).br.value())
+            if (m_nodes.at(tl_node_pos.value()).br.has_value())
             {
-                m_cur_node = tl_node_pos.value() + m_nodes.begin();
-                m_moving = true;
-                m_move_timer = 100.0f;
-                m_move_dir = TOP_LEFT;
+                if (m_nodes.at(tl_node_pos.value()).br.value())
+                {   
+                    m_cur_node = tl_node_pos.value() + m_nodes.begin();
+                    m_moving = true;
+                    m_move_timer = 100.0f;
+                    m_move_dir = TOP_LEFT;
+                }
+                else if (m_select_bond_mode)
+                {
+                    m_nodes.at(tl_node_pos.value()).br = true;
+                    m_select_bond_mode = false;
+                }
             }
         }
     }
@@ -238,12 +288,20 @@ void SelectState::update(float dt)
 
         if (tr_node_pos.has_value())
         {
-            if (m_nodes.at(tr_node_pos.value()).bl.has_value() && m_nodes.at(tr_node_pos.value()).bl.value())
+            if (m_nodes.at(tr_node_pos.value()).bl.has_value())
             {
-                m_cur_node = tr_node_pos.value() + m_nodes.begin();
-                m_moving = true;
-                m_move_timer = 100.0f;
-                m_move_dir = TOP_RIGHT;
+                if (m_nodes.at(tr_node_pos.value()).bl.value())
+                {   
+                    m_cur_node = tr_node_pos.value() + m_nodes.begin();
+                    m_moving = true;
+                    m_move_timer = 100.0f;
+                    m_move_dir = TOP_RIGHT;
+                }
+                else if (m_select_bond_mode)
+                {
+                    m_nodes.at(tr_node_pos.value()).bl = true;
+                    m_select_bond_mode = false;
+                }
             }
         }
     }
@@ -251,16 +309,24 @@ void SelectState::update(float dt)
     {
         m_move_bl = false;
 
-        if (m_cur_node->bl.has_value() && m_cur_node->bl.value())
+        if (m_cur_node->bl.has_value())
         {
-            std::optional<int> bl_node_pos = node_search(m_cur_node->pos.x - 2, m_cur_node->pos.y + 2, m_cur_node - m_nodes.begin());
+            if (m_cur_node->bl.value())
+            {   
+                std::optional<int> bl_node_pos = node_search(m_cur_node->pos.x - 2, m_cur_node->pos.y + 2, m_cur_node - m_nodes.begin());
 
-            if (bl_node_pos.has_value())
+                if (bl_node_pos.has_value())
+                {
+                    m_cur_node = bl_node_pos.value() + m_nodes.begin();
+                    m_moving = true;
+                    m_move_timer = 100.0f;
+                    m_move_dir = BOTTOM_LEFT;
+                }
+            }
+            else if (m_select_bond_mode)
             {
-                m_cur_node = bl_node_pos.value() + m_nodes.begin();
-                m_moving = true;
-                m_move_timer = 100.0f;
-                m_move_dir = BOTTOM_LEFT;
+                m_cur_node->bl = true;
+                m_select_bond_mode = false;
             }
         }
     }
@@ -268,16 +334,24 @@ void SelectState::update(float dt)
     {
         m_move_br = false;
 
-        if (m_cur_node->br.has_value() && m_cur_node->br.value())
+        if (m_cur_node->br.has_value())
         {
-            std::optional<int> br_node_pos = node_search(m_cur_node->pos.x + 2, m_cur_node->pos.y + 2, m_cur_node - m_nodes.begin());
+            if (m_cur_node->br.value())
+            {   
+                std::optional<int> br_node_pos = node_search(m_cur_node->pos.x + 2, m_cur_node->pos.y + 2, m_cur_node - m_nodes.begin());
 
-            if (br_node_pos.has_value())
+                if (br_node_pos.has_value())
+                {
+                    m_cur_node = br_node_pos.value() + m_nodes.begin();
+                    m_moving = true;
+                    m_move_timer = 100.0f;
+                    m_move_dir = BOTTOM_RIGHT;
+                }
+            }
+            else if (m_select_bond_mode)
             {
-                m_cur_node = br_node_pos.value() + m_nodes.begin();
-                m_moving = true;
-                m_move_timer = 100.0f;
-                m_move_dir = BOTTOM_RIGHT;
+                m_cur_node->br = true;
+                m_select_bond_mode = false;
             }
         }
     }
@@ -338,19 +412,62 @@ void SelectState::update(float dt)
 
 void SelectState::render() const
 {
-    for (int y = 0; y < HEIGHT; y++)
+    // for (int y = 0; y < HEIGHT; y++)
+    // {
+    //     for (int x = 0; x < WIDTH; x++)
+    //     {
+    //         int i = y + x;
+    //         int j = i * 500;
+
+    //         int g = std::clamp((j & 0xFF) + 120, 0, 255);
+
+    //         SDL_SetRenderDrawColor(renderer, 0, g, 0, 255);
+    //         SDL_RenderDrawPoint(renderer, x, y);
+    //     }
+    // }
+
+    if (m_shop_mode)
     {
-        for (int x = 0; x < WIDTH; x++)
-        {
-            int i = y + x;
-            int j = i * 500;
+        SDL_SetRenderDrawColor(renderer, 0x55, 0x34, 0x2B, 0xFF);
+        SDL_RenderFillRect(renderer, NULL);
 
-            int g = std::clamp((j & 0xFF) + 120, 0, 255);
+        std::string text1 = "PRESS \"B\" to buy a checkpoint";
+        std::string text2 = "for 3 coins";
+        std::string text3 = "PRESS \"S\" to leave shop!";
 
-            SDL_SetRenderDrawColor(renderer, 0, g, 0, 255);
-            SDL_RenderDrawPoint(renderer, x, y);
-        }
+        FontRender::render_text(text1, WIDTH / 2 - text1.size() * FONT_SIZE / 2, 0);
+        FontRender::render_text(text2, WIDTH / 2 - text2.size() * FONT_SIZE / 2, FONT_SIZE);
+        FontRender::render_text(text3, WIDTH / 2 - text3.size() * FONT_SIZE / 2, HEIGHT - FONT_SIZE - 1);
+
+        SDL_Texture *checkpoint_tex = IMG_LoadTexture(renderer, "res/gfx/checkpoint.png"); // really bad code
+        SDL_Rect dst = SDL_Rect {.x = WIDTH / 2 - 16, .y = HEIGHT / 2 - 16, .w = 32, .h = 32};
+
+        SDL_RenderCopy(renderer, checkpoint_tex, NULL, &dst);
+        SDL_DestroyTexture(checkpoint_tex); // no mem leak
+
+        return;
     }
+
+    if (m_no_double_play_mode)
+    {
+        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+        SDL_RenderFillRect(renderer, NULL);
+
+        std::string text1 = "you can play the same level";
+        std::string text2 = "multiple times. however";
+        std::string text3 = "you may not play the same level";
+        std::string text4 = "twice in a row";
+
+        FontRender::render_text(text1, WIDTH / 2 - text1.size() * FONT_SIZE / 2, HEIGHT / 2 - FONT_SIZE * 2);
+        FontRender::render_text(text2, WIDTH / 2 - text2.size() * FONT_SIZE / 2, HEIGHT / 2 - FONT_SIZE);
+        FontRender::render_text(text3, WIDTH / 2 - text3.size() * FONT_SIZE / 2, HEIGHT / 2);
+        FontRender::render_text(text4, WIDTH / 2 - text4.size() * FONT_SIZE / 2, HEIGHT / 2 + FONT_SIZE);
+
+        return;
+    }
+
+    SDL_SetRenderDrawColor(renderer, 0x00, 0xB7, 0x0A, 0xFF);
+    SDL_RenderFillRect(renderer, NULL);
 
     // render paths/nodes
     for (auto it = m_nodes.begin(); it < m_nodes.end(); it++)
@@ -420,14 +537,42 @@ void SelectState::render() const
     int LEVEL_INDEX = m_cur_node - m_nodes.begin() + 1;
     const std::string top_text = "LVL COIN CHKPNT";
 
+    int coins = PlayState::get_coins();
+    int checkpoints = PlayState::get_checkpoints();
+
     std::string bottom_text = " ";
     bottom_text += char(LEVEL_INDEX / 10 + '0');
     bottom_text += char(LEVEL_INDEX % 10 + '0');
-    bottom_text += "            ";
-    SDL_Log(bottom_text.c_str());
+    bottom_text += "  ";
+    bottom_text += char(coins / 100 + '0');
+    bottom_text += char((coins % 100) / 10 + '0');
+    bottom_text += char(coins % 10 + '0');
+    bottom_text += "    ";
+    bottom_text += char(checkpoints / 100 + '0');
+    bottom_text += char((checkpoints % 100) / 10 + '0');
+    bottom_text += char(checkpoints % 10 + '0');
 
     FontRender::render_text(top_text, WIDTH / 2 - top_text.size() * FONT_SIZE / 2, 0);
     FontRender::render_text(bottom_text, WIDTH / 2 - top_text.size() * FONT_SIZE / 2, FONT_SIZE);
+
+    if (m_select_bond_mode)
+    {
+        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x50);
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        SDL_RenderFillRect(renderer, NULL);
+
+        std::string text1 = "PLEASE SELECT AN";
+        std::string text2 = "EMPTY PATH TO ACTIVATE";
+        std::string text3 = "IT OR MOVE TO AN ACTIVE";
+        std::string text4 = "PATH UNTIL YOU SELECT ONE";
+
+        FontRender::render_text(text1, WIDTH / 2 - text1.size() * FONT_SIZE / 2, HEIGHT / 2 - FONT_SIZE * 2);
+        FontRender::render_text(text2, WIDTH / 2 - text2.size() * FONT_SIZE / 2, HEIGHT / 2 - FONT_SIZE);
+        FontRender::render_text(text3, WIDTH / 2 - text3.size() * FONT_SIZE / 2, HEIGHT / 2);
+        FontRender::render_text(text4, WIDTH / 2 - text4.size() * FONT_SIZE / 2, HEIGHT / 2 + FONT_SIZE);
+    }
+
+    FontRender::render_text("PRESS \"S\" to shop!", 1, HEIGHT - FONT_SIZE - 1);
 }
 
 SelectState *SelectState::get()
@@ -478,12 +623,31 @@ std::optional<int> SelectState::node_search(int x, int y, int lo, int hi)
     return {};
 }
 
-int SelectState::non_static_get_cur_lvl()
+int SelectState::get_cur_lvl()
 {
     return m_cur_node - m_nodes.begin() + 1;
 }
 
-int SelectState::get_cur_lvl()
+std::vector<Node>::iterator SelectState::get_cur_node()
 {
-    return m_select_state.non_static_get_cur_lvl();
+    return m_cur_node;
+}
+
+void SelectState::set_select_bond(bool a)
+{
+    m_select_bond_mode = a;
+}
+
+void SelectState::set_last_played_node(int i)
+{
+    m_last_played_node = i;
+}
+
+void SelectState::go_back_to_state()
+{
+    SelectState *ss = SelectState::get();
+
+    ss->set_select_bond(true);
+    ss->get_cur_node()->active = true;
+    ss->set_last_played_node(ss->get_cur_lvl());
 }

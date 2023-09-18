@@ -1,6 +1,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <memory>
 #include "game_state_manager.h"
 #include "menu_state.h"
@@ -14,6 +15,8 @@ SDL_Renderer *renderer = nullptr;
 
 void init()
 {
+	srand(time(NULL));
+
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
 		fprintf(stderr, "SDL_Init(SDL_INIT_VIDEO) has failed! %s\n", SDL_GetError());
@@ -41,7 +44,7 @@ void init()
 		exit(1);
 	}
 
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
 	if (renderer == nullptr)
 	{

@@ -66,5 +66,6 @@ void GameStateManager::pop_state()
 		return;
 	}
 
+	m_game_states.back()->destroy();
 	m_game_states.pop_back();
 }

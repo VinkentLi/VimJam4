@@ -39,6 +39,7 @@ private:
     std::string m_node_data;
     std::vector<Node> m_nodes;
     std::vector<Node>::iterator m_cur_node;
+    int m_last_played_node;
     SDL_FPoint m_camera_pos;
     SDL_FPoint m_player_pos;
     static constexpr int m_NODE_COUNT = 16;
@@ -50,6 +51,9 @@ private:
     float m_move_timer;
     bool m_move_tl, m_move_tr, m_move_bl, m_move_br;
     bool m_moving;
+    bool m_shop_mode;
+    bool m_select_bond_mode;
+    bool m_no_double_play_mode;
     MoveDir m_move_dir;
 
     void parse_node_data();
@@ -61,7 +65,10 @@ public:
     void handle_events(SDL_Event *event) override;
     void update(float dt) override;
     void render() const override;
-    int non_static_get_cur_lvl();
     static SelectState *get();
-    static int get_cur_lvl();
+    int get_cur_lvl();
+    std::vector<Node>::iterator get_cur_node();
+    void set_select_bond(bool a);
+    void set_last_played_node(int i);
+    static void go_back_to_state();
 };
