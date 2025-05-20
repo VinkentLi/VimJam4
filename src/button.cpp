@@ -2,53 +2,42 @@
 #include "button.h"
 #include "constants.h"
 
-Button::Button(SDL_Renderer *renderer, SDL_Rect button_box, SDL_Color color) 
-    : m_renderer(renderer), m_button_box(button_box), m_color(color)
-{
-    m_pressed = false;
+Button::Button(SDL_Renderer *renderer, SDL_Rect buttonBox, SDL_Color color) 
+    : m_Renderer(renderer), m_ButtonBox(buttonBox), m_Color(color) {
+    m_Pressed = false;
 }
 
-Button::~Button()
-{
+Button::~Button() {
 }
 
-void Button::render() const
-{
-    if (!m_pressed)
-    {
-        SDL_SetRenderDrawColor(m_renderer, m_color.r, m_color.g, m_color.b, 0xFF);
+void Button::render() const {
+    if (!m_Pressed) {
+        SDL_SetRenderDrawColor(m_Renderer, m_Color.r, m_Color.g, m_Color.b, 0xFF);
     }
-    else
-    {
-        SDL_SetRenderDrawColor(m_renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+    else {
+        SDL_SetRenderDrawColor(m_Renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     }
-
-    SDL_RenderFillRect(m_renderer, &m_button_box);
+    SDL_RenderFillRect(m_Renderer, &m_ButtonBox);
 }
 
-void Button::press()
-{
-    m_pressed = true;
+void Button::press() {
+    m_Pressed = true;
 }
 
-void Button::release()
-{
-    m_pressed = false;
+void Button::release() {
+    m_Pressed = false;
 }
 
-void Button::add_color(int add1, int add2, int add3)
-{
-    m_color.r += add1;
-    m_color.g += add2;
-    m_color.b += add3;
+void Button::addColor(int add1, int add2, int add3) {
+    m_Color.r += add1;
+    m_Color.g += add2;
+    m_Color.b += add3;
 }
 
-SDL_Rect *Button::get_button_box()
-{
-    return &m_button_box;
+SDL_Rect *Button::getButtonBox() {
+    return &m_ButtonBox;
 }
 
-bool Button::is_pressed()
-{
-    return m_pressed;
+bool Button::isPressed() {
+    return m_Pressed;
 }

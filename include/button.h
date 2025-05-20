@@ -1,13 +1,12 @@
 #pragma once
 #include <SDL.h>
 
-class Button
-{
+class Button {
 private:
-    bool m_pressed;
-    SDL_Renderer *m_renderer;
-    SDL_Rect m_button_box;
-    SDL_Color m_color;
+    bool m_Pressed;
+    SDL_Renderer *m_Renderer;
+    SDL_Rect m_ButtonBox;
+    SDL_Color m_Color;
 
 public:
     Button() = default;
@@ -16,7 +15,7 @@ public:
     void render() const;
     void press();
     void release();
-    void add_color(int add1, int add2, int add3);
-    SDL_Rect *get_button_box();
-    bool is_pressed();
+    void addColor(int add1, int add2, int add3);
+    SDL_Rect *getButtonBox();
+    bool isPressed();
 };

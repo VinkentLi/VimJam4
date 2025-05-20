@@ -3,108 +3,78 @@
 #include "constants.h"
 #include <SDL_image.h>
 
-Enemy::Enemy(std::vector<Object> *objs, SDL_FPoint pos) : m_objs(objs), m_pos(pos)
-{
-    m_tex = IMG_LoadTexture(renderer, "res/gfx/enemy.png");
-    m_hitbox = SDL_FRect {.x = m_pos.x + 3, .y = m_pos.y + 3, .w = 10, .h = 10};
-    m_y_velo = 0.0f;
-    m_type = rand() % 2;
-    m_dir = LEFT;
-    m_grounded = false;
-    m_jumping = false;
-    m_time_since_last_jump = 0.0f;
+Enemy::Enemy(std::vector<Object> *objs, SDL_FPoint pos) : m_Objects(objs), m_Position(pos) {
+    m_Texture = IMG_LoadTexture(renderer, "res/gfx/enemy.png");
+    m_Hitbox = SDL_FRect {.x = m_Position.x + 3, .y = m_Position.y + 3, .w = 10, .h = 10};
+    m_YVelocity = 0.0f;
+    m_Type = rand() % 2;
+    m_Direction = LEFT;
+    m_Grounded = false;
+    m_Jumping = false;
+    m_TimeSinceLastJump = 0.0f;
 }
 
-Enemy::~Enemy()
-{
-    SDL_DestroyTexture(m_tex);
+Enemy::~Enemy() {
+    SDL_DestroyTexture(m_Texture);
 }
 
-void Enemy::update(float dt)
-{
-    if (m_type == SPRINTER)
-    {
-        m_hitbox.x += (m_dir * 2 - 1) * m_VELO * dt;
-    }
-    else if (m_type == JUMPER)
-    {
-        m_time_since_last_jump += dt;
-
-        if (m_time_since_last_jump >= 30.0f && m_grounded)
-        {
-            m_dir = rand() % 2;
-            m_time_since_last_jump = 0.0f;
-            m_jumping = true;
-            m_y_velo = m_JUMP_STRENGTH;
+void Enemy::update(float dt) {
+    if (m_Type == SPRINTER) {
+        m_Hitbox.x += (m_Direction * 2 - 1) * m_VELO * dt;
+    } else if (m_Type == JUMPER) {
+        m_TimeSinceLastJump += dt;
+        if (m_TimeSinceLastJump >= 30.0f && m_Grounded) {
+            m_Direction = rand() % 2;
+            m_TimeSinceLastJump = 0.0f;
+            m_Jumping = true;
+            m_YVelocity = m_JUMP_STRENGTH;
         }
 
-        if (m_jumping)
-        {
-            m_time_since_last_jump -= dt;
-            m_hitbox.x += (m_dir * 2 - 1) * m_VELO * dt;
+        if (m_Jumping) {
+            m_TimeSinceLastJump -= dt;
+            m_Hitbox.x += (m_Direction * 2 - 1) * m_VELO * dt;
         }
     }
-
-    m_y_velo += m_GRAVITY * dt;
-
-    m_grounded = false;
+    m_YVelocity += m_GRAVITY * dt;
+    m_Grounded = false;
 
     // check x collisions
-    for (Object &o : *m_objs)
-    {
+    for (Object &o : *m_Objects) {
         SDL_FRect intersect;
-
-        if (SDL_IntersectFRect(&m_hitbox, &o.obj, &intersect))
-        {
-            if (m_dir == RIGHT)
-            {
-                m_hitbox.x -= intersect.w;
+        if (SDL_IntersectFRect(&m_Hitbox, &o.obj, &intersect)) {
+            if (m_Direction == RIGHT) {
+                m_Hitbox.x -= intersect.w;
+            } else {
+                m_Hitbox.x += intersect.w;
             }
-            else
-            {
-                m_hitbox.x += intersect.w;
-            }
-
-            m_dir = !m_dir;
+            m_Direction = !m_Direction;
         }
     }
-
-    m_hitbox.y += m_y_velo * dt;
-
+    m_Hitbox.y += m_YVelocity * dt;
     // check y collisions
-    for (Object &o : *m_objs)
-    {
+    for (Object &o : *m_Objects) {
         SDL_FRect intersect;
 
-        if (SDL_IntersectFRect(&m_hitbox, &o.obj, &intersect))
-        {
-            if (m_y_velo >= 0.0f)
-            {
-                m_hitbox.y -= intersect.h;
-                m_grounded = true;
-                m_jumping = false;
+        if (SDL_IntersectFRect(&m_Hitbox, &o.obj, &intersect)) {
+            if (m_YVelocity >= 0.0f) {
+                m_Hitbox.y -= intersect.h;
+                m_Grounded = true;
+                m_Jumping = false;
+            } else {
+                m_Hitbox.y += intersect.h;
             }
-            else
-            {
-                m_hitbox.y += intersect.h;
-            }
-
-            m_y_velo = 0.0f;
+            m_YVelocity = 0.0f;
         }
     }
-
-    m_pos.x = m_hitbox.x - 3;
-    m_pos.y = m_hitbox.y - 3;
+    m_Position.x = m_Hitbox.x - 3;
+    m_Position.y = m_Hitbox.y - 3;
 }
 
-void Enemy::render(SDL_FPoint cam_pos) const
-{
-    SDL_FRect dst = SDL_FRect {.x = m_pos.x - cam_pos.x, .y = m_pos.y - cam_pos.y, .w = m_SIZE, .h = m_SIZE};
-
-    SDL_RenderCopyF(renderer, m_tex, NULL, &dst);
+void Enemy::render(SDL_FPoint cam_pos) const {
+    SDL_FRect dst = SDL_FRect {.x = m_Position.x - cam_pos.x, .y = m_Position.y - cam_pos.y, .w = m_SIZE, .h = m_SIZE};
+    SDL_RenderCopyF(renderer, m_Texture, NULL, &dst);
 }
 
-SDL_FRect *Enemy::get_hitbox()
-{
-    return &m_hitbox;
+SDL_FRect *Enemy::getHitbox() {
+    return &m_Hitbox;
 }
